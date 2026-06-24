@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>The Nose Knows! · ESL Clubhouse</title>
+<style>
+  :root{
+    --ink:#2D2A40;
+    --cream:#FFF4E2;
+    --sky1:#BFE9F5;
+    --sky2:#FFE3C7;
+    --rose:#FF7A8A;
+    --rose-deep:#E8556A;
+    --teal:#2EBFA5;
+    --sun:#FFC94D;
+    --grass:#8BD17C;
+    --card:#FFFFFF;
+    --shadow: 0 10px 0 rgba(45,42,64,.12), 0 18px 30px rgba(45,42,64,.18);
+    --round:26px;
+    --face-font:"Arial Rounded MT Bold","VAG Rounded",Trebuchet MS,system-ui,-apple-system,sans-serif;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;height:100%;}
+  body{
+    font-family:var(--face-font);
+    color:var(--ink);
+    background:
+      radial-gradient(120% 80% at 50% -10%, var(--sky1) 0%, transparent 60%),
+      linear-gradient(180deg,var(--sky2) 0%, var(--cream) 45%, var(--cream) 100%);
+    -webkit-user-select:none;user-select:none;
+    overflow:hidden;
+    touch-action:manipulation;
+  }
+  .app{height:100%;display:flex;flex-direction:column;max-width:1100px;margin:0 auto;}
+
+  /* ---------- Header / Brand ---------- */
+  header{
+    display:flex;align-items:center;gap:12px;
+    padding:10px clamp(12px,3vw,26px) 6px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand .mark{width:34px;height:34px;flex:0 0 auto;}
+  .brand .wordmark{line-height:1;}
+  .brand .name{font-family:Georgia,"Times New Roman",serif;font-variant:small-caps;
+    letter-spacing:.06em;font-size:14px;color:var(--ink);font-weight:700;}
+  .brand .tag{font-family:Georgia,serif;font-style:italic;font-size:10px;color:#8a8597;margin-top:2px;}
+  .spacer{flex:1;}
+  .speaker{
+    border:none;background:var(--card);border-radius:50%;width:44px;height:44px;
+    box-shadow:0 4px 0 rgba(45,42,64,.12);font-size:20px;cursor:pointer;display:grid;place-items:center;
+  }
+  .speaker:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(45,42,64,.12);}
+
+  /* ---------- Tabs ---------- */
+  nav.tabs{display:flex;gap:8px;padding:4px clamp(12px,3vw,26px) 0;flex-wrap:wrap;}
+  .tab{
+    flex:1 1 0;min-width:104px;border:none;cursor:pointer;
+    font-family:inherit;font-size:clamp(14px,2.2vw,18px);font-weight:700;
+    padding:12px 10px;border-radius:18px 18px 0 0;
+    background:#F3D9BE;color:#9a7c5e;transition:transform .1s,background .15s,color .15s;
+    box-shadow:inset 0 -4px 0 rgba(0,0,0,.06);
+  }
+  .tab .emoji{font-size:1.15em;margin-right:.25em;}
+  .tab[aria-selected="true"]{background:var(--card);color:var(--ink);box-shadow:0 -6px 14px rgba(45,42,64,.08);}
+
+  /* ---------- Panels ---------- */
+  main{flex:1;min-height:0;position:relative;padding:0 clamp(12px,3vw,26px) clamp(12px,3vw,22px);}
+  .panel{
+    position:absolute;inset:0 clamp(12px,3vw,26px) clamp(12px,3vw,22px);
+    background:var(--card);border-radius:0 0 var(--round) var(--round);
+    box-shadow:var(--shadow);
+    display:none;flex-direction:column;overflow:hidden;
+  }
+  .panel.active{display:flex;animation:pop .25s ease;}
+  @keyframes pop{from{opacity:0;transform:translateY(8px) scale(.99)}to{opacity:1;transform:none}}
+
+  .prompt{
+    text-align:center;font-size:clamp(20px,4.5vw,34px);font-weight:700;
+    padding:14px 16px 4px;color:var(--ink);
+  }
+  .sub{text-align:center;font-size:clamp(13px,2.4vw,17px);color:#8a8597;padding:0 16px 6px;font-weight:700;}
+
+  .stage{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:6px;}
+
+  /* face display */
+  .facewrap{position:relative;width:clamp(150px,34vw,230px);aspect-ratio:1;}
+  .facewrap svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 10px rgba(45,42,64,.12));}
+  .dropzone{
+    position:absolute;border:4px dashed #c9c4d6;border-radius:50%;
+    display:grid;place-items:center;color:#c0bbcf;font-size:30px;
+    transition:transform .15s,border-color .15s,background .15s;pointer-events:none;
+  }
+  .facewrap.over .dropzone{border-color:var(--teal);background:rgba(46,191,165,.12);transform:scale(1.08);}
+  .facewrap.solved .dropzone{display:none;}
+
+  .bodywrap{width:clamp(118px,28vw,196px);aspect-ratio:200/330;}
+  .bodywrap svg{width:100%;height:100%;display:block;filter:drop-shadow(0 8px 10px rgba(45,42,64,.12));}
+
+  /* ---------- Memory game ---------- */
+  .memwrap{flex:1;min-height:0;display:grid;place-items:center;padding:6px;}
+  .memgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(6px,1.6vw,12px);width:min(540px,97%);}
+  .memcard{aspect-ratio:1;cursor:pointer;border:none;padding:0;background:transparent;perspective:700px;}
+  .memcard .inner{display:block;position:relative;width:100%;height:100%;transform-style:preserve-3d;transition:transform .4s;}
+  .memcard.flipped .inner,.memcard.matched .inner{transform:rotateY(180deg);}
+  .memcard .face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;
+    border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 5px 0 rgba(45,42,64,.16);}
+  .memcard .back{background:linear-gradient(135deg,var(--rose-l,#FF7A8A),var(--rose-deep));color:#fff;font-size:clamp(26px,6vw,40px);font-weight:700;}
+  .memcard .front{background:#FBF3FF;transform:rotateY(180deg);gap:2px;}
+  .memcard .front svg{width:58%;height:54%;}
+  .memcard .front .lbl{font-weight:700;font-size:clamp(11px,2.2vw,15px);color:var(--ink);}
+  .memcard.matched .front{background:#EAFBF6;outline:3px solid var(--teal);outline-offset:-3px;}
+  .memcard.matched{animation:matchpop .4s;}
+  @keyframes matchpop{0%{transform:scale(1)}50%{transform:scale(1.08)}100%{transform:scale(1)}}
+
+  /* nose chips row */
+  .tray{display:flex;gap:clamp(10px,2.5vw,20px);flex-wrap:wrap;justify-content:center;align-items:center;}
+  .chip{
+    width:clamp(78px,18vw,118px);aspect-ratio:1;background:#FBF3FF;border:none;border-radius:24px;
+    cursor:pointer;padding:10px;box-shadow:0 6px 0 rgba(45,42,64,.14);
+    display:grid;place-items:center;transition:transform .1s,box-shadow .1s;touch-action:none;
+  }
+  .chip svg{width:100%;height:100%;pointer-events:none;}
+  .chip:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(45,42,64,.14);}
+  .chip.dragging{opacity:.35;}
+  .chip.wrong{animation:shake .4s;}
+  .chip.gone{opacity:0;transform:scale(.4);pointer-events:none;}
+  @keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-9px)}40%{transform:translateX(9px)}60%{transform:translateX(-6px)}80%{transform:translateX(6px)}}
+
+  .floatnose{position:fixed;width:90px;height:90px;pointer-events:none;z-index:50;transition:transform .35s cubic-bezier(.2,1.4,.5,1),opacity .35s;}
+  .floatnose svg{width:100%;height:100%;}
+
+  /* buttons */
+  .btnrow{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;padding:4px 0 14px;}
+  .btn{
+    font-family:inherit;font-weight:700;font-size:clamp(15px,2.6vw,20px);border:none;cursor:pointer;
+    padding:14px 26px;border-radius:999px;color:#fff;background:var(--teal);
+    box-shadow:0 6px 0 rgba(0,0,0,.16);transition:transform .1s,box-shadow .1s;
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(0,0,0,.16);}
+  .btn.rose{background:var(--rose);}
+  .btn.sun{background:var(--sun);color:var(--ink);}
+  .btn.ghost{background:#EFE9F5;color:var(--ink);box-shadow:0 6px 0 rgba(45,42,64,.1);}
+
+  /* mode switch */
+  .modeswitch{display:inline-flex;background:#EFE9F5;border-radius:999px;padding:5px;gap:4px;}
+  .modeswitch button{border:none;background:transparent;font-family:inherit;font-weight:700;
+    font-size:clamp(13px,2.3vw,16px);padding:9px 18px;border-radius:999px;cursor:pointer;color:#8a8597;}
+  .modeswitch button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 3px 8px rgba(45,42,64,.14);}
+
+  .scorebar{display:flex;align-items:center;gap:8px;justify-content:center;padding:2px 0 0;flex-wrap:wrap;}
+  .pip{width:16px;height:16px;border-radius:50%;background:#E6DEF0;transition:background .2s,transform .2s;}
+  .pip.done{background:var(--sun);transform:scale(1.15);}
+
+  /* smelling grid */
+  .smellgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,2vw,16px);width:100%;max-width:560px;padding:6px;}
+  .smell{
+    background:#FBF3FF;border:none;border-radius:22px;cursor:pointer;padding:10px 6px 8px;
+    box-shadow:0 6px 0 rgba(45,42,64,.12);display:flex;flex-direction:column;align-items:center;gap:4px;
+    transition:transform .1s,box-shadow .1s;
+  }
+  .smell svg{width:clamp(48px,11vw,72px);height:clamp(48px,11vw,72px);}
+  .smell .lbl{font-size:clamp(12px,2.3vw,16px);font-weight:700;}
+  .smell:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(45,42,64,.12);}
+  .smell.sniff svg{animation:sniff .6s ease;}
+  @keyframes sniff{0%,100%{transform:scale(1)}30%{transform:scale(1.18) rotate(-4deg)}60%{transform:scale(.95) rotate(3deg)}}
+
+  .bignose{width:clamp(90px,22vw,150px);aspect-ratio:1;}
+  .bignose svg{width:100%;height:100%;filter:drop-shadow(0 8px 10px rgba(45,42,64,.14));}
+  .bignose.sniffing svg{animation:nosesniff .7s ease infinite;}
+  @keyframes nosesniff{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px) scale(1.04)}}
+
+  .saying{min-height:1.6em;text-align:center;font-size:clamp(16px,3.4vw,24px);font-weight:700;color:var(--rose-deep);padding:4px 12px;}
+
+  /* confetti */
+  .confetti{position:fixed;inset:0;pointer-events:none;z-index:60;overflow:hidden;display:none;}
+  .confetti.go{display:block;}
+  .conf{position:absolute;width:11px;height:14px;border-radius:2px;will-change:transform;}
+  @keyframes fall{to{transform:translateY(110vh) rotate(720deg);opacity:.9;}}
+
+  footer{text-align:center;font-family:Georgia,serif;font-style:italic;font-size:11px;color:#a59fb0;padding:2px 0 6px;}
+
+  /* ---------- Home screen ---------- */
+  .homehero{text-align:center;padding:clamp(10px,3vh,22px) 16px 4px;}
+  .hometitle{font-family:var(--face-font);font-weight:700;font-size:clamp(28px,6.5vw,48px);color:var(--ink);}
+  .homesub{font-size:clamp(14px,2.6vw,18px);color:#8a8597;font-weight:700;margin-top:4px;}
+  .homegrid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(2,1fr);gap:clamp(8px,2vw,15px);
+    padding:clamp(8px,2vh,16px) clamp(12px,3vw,28px) clamp(14px,3vh,22px);align-content:center;overflow:auto;}
+  .homecard{display:flex;align-items:center;gap:12px;padding:clamp(10px,2.2vw,16px);border:none;cursor:pointer;
+    border-radius:22px;box-shadow:0 6px 0 rgba(45,42,64,.12);text-align:left;font-family:inherit;transition:transform .1s,box-shadow .1s;}
+  .homecard:active{transform:translateY(3px);box-shadow:0 3px 0 rgba(45,42,64,.12);}
+  .homecard.wide{grid-column:1 / -1;}
+  .homecard .ic{width:clamp(52px,12vw,70px);height:clamp(52px,12vw,70px);flex:0 0 auto;background:#fff;
+    border-radius:16px;display:grid;place-items:center;box-shadow:0 3px 0 rgba(45,42,64,.08);}
+  .homecard .ic svg{width:82%;height:82%;}
+  .homecard .tx{display:flex;flex-direction:column;min-width:0;}
+  .homecard .l{font-weight:700;font-size:clamp(15px,2.8vw,20px);color:var(--ink);}
+  .homecard .s{font-size:clamp(11px,2.1vw,14px);color:#7d7790;font-weight:700;margin-top:2px;}
+
+  /* ---------- Senses tab ---------- */
+  .sensefilter{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;}
+  .sensefilter button{border:none;background:#EFE9F5;font-family:inherit;font-weight:700;
+    font-size:clamp(12px,2.2vw,15px);padding:8px 14px;border-radius:999px;cursor:pointer;color:#8a8597;}
+  .sensefilter button[aria-pressed="true"]{background:var(--ink);color:#fff;}
+  .sensebadge{min-height:1.5em;font-weight:700;font-size:clamp(16px,3.4vw,24px);text-align:center;}
+  .sensebadge .pill{display:inline-block;padding:4px 16px;border-radius:999px;color:#fff;}
+
+  /* ---------- Settings modal ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(45,42,64,.5);display:none;z-index:80;
+    align-items:center;justify-content:center;padding:16px;backdrop-filter:blur(2px);}
+  .overlay.open{display:flex;animation:pop .2s ease;}
+  .sheet{background:var(--card);border-radius:26px;width:min(560px,100%);max-height:90vh;overflow:auto;
+    box-shadow:0 20px 50px rgba(45,42,64,.35);padding:18px 18px 22px;}
+  .sheet h2{font-size:clamp(20px,4vw,26px);margin:2px 0 2px;text-align:center;}
+  .sheet .sheetsub{text-align:center;color:#8a8597;font-size:13px;margin-bottom:14px;font-weight:700;}
+  .grp{margin:14px 0;}
+  .grp h3{font-size:15px;margin:0 0 8px;color:var(--ink);}
+  .grp .hint{font-size:12px;color:#a59fb0;font-weight:700;margin:0 0 8px;}
+  .pickgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+  .pick{border:3px solid #ece6f2;background:#FBF3FF;border-radius:16px;cursor:pointer;padding:8px 4px 6px;
+    display:flex;flex-direction:column;align-items:center;gap:2px;transition:border-color .12s,transform .1s,opacity .12s;}
+  .pick svg{width:46px;height:46px;}
+  .pick .pname{font-size:12px;font-weight:700;}
+  .pick[aria-pressed="false"]{opacity:.4;border-color:#ece6f2;}
+  .pick[aria-pressed="true"]{border-color:var(--teal);background:#EAFBF6;}
+  .pick:active{transform:scale(.96);}
+  .seg{display:inline-flex;background:#EFE9F5;border-radius:999px;padding:5px;gap:4px;}
+  .seg button{border:none;background:transparent;font-family:inherit;font-weight:700;font-size:15px;
+    padding:9px 20px;border-radius:999px;cursor:pointer;color:#8a8597;}
+  .seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:0 3px 8px rgba(45,42,64,.14);}
+  .voicebadge{display:inline-flex;align-items:center;gap:8px;background:#FFF4E2;border-radius:14px;
+    padding:10px 14px;font-size:13px;font-weight:700;color:#9a7c5e;}
+  .sheet .done{display:block;width:100%;margin-top:8px;}
+
+  @media (max-height:560px){
+    .prompt{font-size:clamp(17px,4vw,24px);padding-top:8px;}
+    header{padding-top:6px;}
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important;transition-duration:.05ms !important;}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+        <g fill="none" stroke="#2D2A40" stroke-width="3">
+          <g transform="rotate(18 50 50)">
+            <circle cx="50" cy="50" r="34"/>
+            <ellipse cx="50" cy="50" rx="14" ry="34"/>
+            <line x1="16" y1="50" x2="84" y2="50"/>
+            <path d="M22 32 H78 M22 68 H78"/>
+          </g>
+        </g>
+        <path d="M50 60 C44 50 30 52 30 64 C30 75 46 84 50 86 C54 84 70 75 70 64 C70 52 56 50 50 60 Z"
+              fill="#fff" stroke="#2D2A40" stroke-width="3" stroke-linejoin="round"/>
+      </svg>
+      <div class="wordmark">
+        <div class="name">ESL Clubhouse</div>
+        <div class="tag">learn · play · grow</div>
+      </div>
+    </div>
+    <div class="spacer"></div>
+    <button class="speaker" id="homeBtn" title="Home" aria-label="Home">🏠</button>
+    <button class="speaker" id="settingsBtn" title="Teacher settings" aria-label="Teacher settings">⚙️</button>
+    <button class="speaker" id="soundToggle" title="Sound on/off" aria-label="Sound on or off">🔊</button>
+  </header>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab" role="tab" aria-selected="false" data-panel="intro"><span class="emoji">❓</span>Missing?</button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="match"><span class="emoji">🐽</span>Match</button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="smell"><span class="emoji">👃</span>Smell</button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="senses"><span class="emoji">🖐️</span>Senses</button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="body"><span class="emoji">🧍</span>Body</button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="memory"><span class="emoji">🧠</span>Memory</button>
+  </nav>
+
+  <main>
+    <!-- ===== HOME ===== -->
+    <section class="panel active" id="home" role="tabpanel">
+      <div class="homehero">
+        <div class="hometitle">The Nose Knows!</div>
+        <div class="homesub">Tap a game to play 🎈</div>
+      </div>
+      <div class="homegrid" id="homeGrid"></div>
+    </section>
+
+    <!-- ===== INTRO ===== -->
+    <section class="panel" id="intro" role="tabpanel">
+      <div class="prompt">What's missing?</div>
+      <div class="sub" id="introSub">Tap the face to find out!</div>
+      <div class="stage">
+        <div class="facewrap" id="introFace"></div>
+        <div class="saying" id="introSay">&nbsp;</div>
+      </div>
+      <div class="btnrow">
+        <button class="btn rose" id="introReveal">Show the nose</button>
+        <button class="btn sun" id="introNext">Next face →</button>
+      </div>
+    </section>
+
+    <!-- ===== MATCH ===== -->
+    <section class="panel" id="match" role="tabpanel">
+      <div class="prompt" id="matchPrompt">Whose nose is this?</div>
+      <div class="sub">
+        <span class="modeswitch" role="group" aria-label="Difficulty">
+          <button id="modeEasy" aria-pressed="true">👆 Easy · Tap</button>
+          <button id="modeHard" aria-pressed="false">✋ Hard · Drag</button>
+        </span>
+      </div>
+      <div class="stage">
+        <div class="facewrap" id="matchFace">
+          <div class="dropzone" id="dropzone">＋</div>
+        </div>
+        <div class="tray" id="tray"></div>
+        <div class="saying" id="matchSay">&nbsp;</div>
+      </div>
+      <div class="scorebar" id="scorebar"></div>
+      <div class="btnrow"><button class="btn ghost" id="matchRestart">Play again ↺</button></div>
+    </section>
+
+    <!-- ===== SMELL ===== -->
+    <section class="panel" id="smell" role="tabpanel">
+      <div class="prompt">We use our nose to smell!</div>
+      <div class="sub">Tap something and take a big sniff 👃</div>
+      <div class="stage" style="justify-content:flex-start;gap:8px;">
+        <div class="bignose" id="bigNose"></div>
+        <div class="saying" id="smellSay">Sniff sniff… what can you smell?</div>
+        <div class="smellgrid" id="smellGrid"></div>
+      </div>
+    </section>
+    <!-- ===== SENSES ===== -->
+    <section class="panel" id="senses" role="tabpanel">
+      <div class="prompt" id="sensePrompt">What's missing?</div>
+      <div class="sub">
+        <span class="sensefilter" id="senseFilter" role="group" aria-label="Choose a sense">
+          <button data-sense="all" aria-pressed="true">All</button>
+          <button data-sense="eyes" aria-pressed="false">👀 See</button>
+          <button data-sense="ears" aria-pressed="false">👂 Hear</button>
+          <button data-sense="nose" aria-pressed="false">👃 Smell</button>
+          <button data-sense="mouth" aria-pressed="false">👅 Taste</button>
+          <button data-sense="whiskers" aria-pressed="false">✋ Touch</button>
+        </span>
+      </div>
+      <div class="stage">
+        <div class="facewrap" id="senseFace"></div>
+        <div class="sensebadge" id="senseBadge">&nbsp;</div>
+      </div>
+      <div class="btnrow">
+        <button class="btn rose" id="senseReveal">Show the part</button>
+        <button class="btn sun" id="senseNext">Next →</button>
+      </div>
+    </section>
+
+    <!-- ===== BODY ===== -->
+    <section class="panel" id="body" role="tabpanel">
+      <div class="prompt" id="bodyPrompt">What's missing?</div>
+      <div class="sub">Look at the body. Which part is gone?</div>
+      <div class="stage">
+        <div class="bodywrap" id="bodyFig"></div>
+        <div class="sensebadge" id="bodyBadge">&nbsp;</div>
+        <div class="saying" id="bodySay">&nbsp;</div>
+      </div>
+      <div class="btnrow">
+        <button class="btn rose" id="bodyReveal">Show the part</button>
+        <button class="btn sun" id="bodyNext">Next →</button>
+      </div>
+    </section>
+
+    <!-- ===== MEMORY ===== -->
+    <section class="panel" id="memory" role="tabpanel">
+      <div class="prompt">Find the matching parts!</div>
+      <div class="sub">Tap two cards. Do they match?</div>
+      <div class="memwrap"><div class="memgrid" id="memGrid"></div></div>
+      <div class="scorebar" id="memScore"></div>
+      <div class="btnrow"><button class="btn ghost" id="memRestart">Play again ↺</button></div>
+    </section>
+
+  </main>
+
+  <footer>ESL Clubhouse · The Nose Knows!</footer>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="sheet" role="dialog" aria-modal="true" aria-label="Teacher settings">
+    <h2>Teacher Settings ⚙️</h2>
+    <div class="sheetsub">Changes apply right away</div>
+
+    <div class="grp">
+      <h3>Animals in play</h3>
+      <div class="hint" id="animalHint">Pick at least 3 for the matching game.</div>
+      <div class="pickgrid" id="animalPicks"></div>
+    </div>
+
+    <div class="grp">
+      <h3>Smells</h3>
+      <div class="hint" id="smellHint">Pick at least 1.</div>
+      <div class="pickgrid" id="smellPicks"></div>
+    </div>
+
+    <div class="grp">
+      <h3>Default match mode</h3>
+      <div class="seg" role="group" aria-label="Default mode">
+        <button id="setEasy" aria-pressed="true">👆 Easy · Tap</button>
+        <button id="setHard" aria-pressed="false">✋ Hard · Drag</button>
+      </div>
+    </div>
+
+    <div class="grp">
+      <h3>Voice</h3>
+      <div class="voicebadge" id="voiceBadge">🎙️ Checking…</div>
+    </div>
+
+    <button class="btn teal done" id="settingsDone">Done</button>
+  </div>
+</div>
+
+<div class="confetti" id="confetti"></div>
+
+<script>
+/* ============================================================
+   THE NOSE KNOWS!  — ESL Clubhouse
+   Single-file offline game. Safari / iPad friendly.
+   ============================================================ */
+
+/* ---------- tiny audio engine (Web Audio) ---------- */
+const Sound = (()=>{
+  let ctx=null, on=true;
+  function ensure(){ if(!ctx){ try{ctx=new (window.AudioContext||window.webkitAudioContext)();}catch(e){} } if(ctx&&ctx.state==='suspended') ctx.resume(); }
+  function tone(f,t,dur,type='sine',gain=.18){
+    if(!on||!ctx) return;
+    const o=ctx.createOscillator(),g=ctx.createGain();
+    o.type=type;o.frequency.setValueAtTime(f,t);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(gain,t+.02);
+    g.gain.exponentialRampToValueAtTime(.0001,t+dur);
+    o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+dur);
+  }
+  return {
+    unlock(){ ensure(); },
+    setOn(v){ on=v; },
+    pop(){ ensure(); if(!ctx)return; const t=ctx.currentTime; tone(520,t,.12,'triangle',.2); tone(780,t+.04,.12,'sine',.12); },
+    good(){ ensure(); if(!ctx)return; const t=ctx.currentTime;[523,659,784,1046].forEach((f,i)=>tone(f,t+i*.08,.22,'triangle',.16)); },
+    win(){ ensure(); if(!ctx)return; const t=ctx.currentTime;[523,659,784,1046,1318].forEach((f,i)=>tone(f,t+i*.1,.3,'triangle',.16)); },
+    nope(){ ensure(); if(!ctx)return; const t=ctx.currentTime; tone(220,t,.18,'sawtooth',.1); tone(160,t+.1,.2,'sawtooth',.1); },
+    sniff(){ ensure(); if(!ctx)return; const t=ctx.currentTime; // rising filtered chirp = inhale
+      const o=ctx.createOscillator(),g=ctx.createGain(),f=ctx.createBiquadFilter();
+      o.type='sawtooth';f.type='bandpass';f.frequency.setValueAtTime(300,t);f.frequency.linearRampToValueAtTime(1400,t+.35);f.Q.value=6;
+      o.frequency.setValueAtTime(120,t);o.frequency.linearRampToValueAtTime(260,t+.35);
+      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(.12,t+.1);g.gain.exponentialRampToValueAtTime(.0001,t+.5);
+      o.connect(f);f.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+.55);
+    }
+  };
+})();
+
+/* ---------- speech (Web Speech API + graceful fallback) ---------- */
+const Speech = (()=>{
+  let on=true, voice=null, ready=false;
+  const synth = window.speechSynthesis;
+  function pick(){
+    if(!synth) return;
+    const v=synth.getVoices();
+    if(!v.length) return;
+    voice = v.find(x=>/en[-_]?GB/i.test(x.lang)&&/female|Kate|Serena|Sonia/i.test(x.name))
+         || v.find(x=>/^en/i.test(x.lang)&&/female|Samantha|Karen|Tessa|Moira|Google US English/i.test(x.name))
+         || v.find(x=>/^en/i.test(x.lang)) || v[0];
+    ready=true;
+  }
+  if(synth){ pick(); synth.onvoiceschanged=pick; }
+  return {
+    setOn(v){ on=v; if(!v&&synth) synth.cancel(); },
+    unlock(){ if(synth&&!ready){ try{const u=new SpeechSynthesisUtterance(' ');u.volume=0;synth.speak(u);}catch(e){} pick(); } },
+    say(text){
+      if(!on||!synth) return;
+      try{
+        synth.cancel();
+        const u=new SpeechSynthesisUtterance(text);
+        if(voice) u.voice=voice;
+        u.rate=.92;u.pitch=1.12;u.volume=1;
+        synth.speak(u);
+      }catch(e){}
+    }
+  };
+})();
+
+/* ---------- recorded clips (base64) + narration router ----------
+   Paste your Descript MP3 exports below as  clipId: "data:audio/mpeg;base64,…"
+   Any clip you haven't recorded yet automatically uses the read-aloud voice. */
+const CLIPS = {
+  // intro_whats_missing: "data:audio/mpeg;base64,AAAA…",
+  // match_correct_pig:   "data:audio/mpeg;base64,AAAA…",
+  // sense_eyes / sense_ears / sense_nose / sense_mouth / sense_whiskers …
+  // body_arms … · memory_match_eyes … · memory_win
+};
+const _clipCache={};
+function clipsLoaded(){ return Object.keys(CLIPS).length; }
+function narrate(clipId, text){
+  if(!audioOn) return;
+  const src = clipId && CLIPS[clipId];
+  if(src){
+    try{
+      let a=_clipCache[clipId]; if(!a){ a=new Audio(src); _clipCache[clipId]=a; }
+      try{ window.speechSynthesis && window.speechSynthesis.cancel(); }catch(e){}
+      a.currentTime=0; const pr=a.play(); if(pr&&pr.catch) pr.catch(()=>Speech.say(text));
+      return;
+    }catch(e){}
+  }
+  Speech.say(text);
+}
+
+/* ============================================================
+   ART — each animal: head (no nose) + nose + chip viewBox + drop point
+   coordinate space: 0 0 200 200
+   ============================================================ */
+const A = {
+  human:{
+    name:"person", say:"That's the person's nose!", article:"the person",
+    senses:["eyes","ears","nose","mouth"], box:[80,96,40,40], drop:[100,121],
+    ears:`<ellipse cx="40" cy="108" rx="11" ry="15" fill="#F6C9A8"/><ellipse cx="160" cy="108" rx="11" ry="15" fill="#F6C9A8"/>
+      <ellipse cx="41" cy="108" rx="5" ry="8" fill="#E5A982"/><ellipse cx="159" cy="108" rx="5" ry="8" fill="#E5A982"/>`,
+    base:`<circle cx="100" cy="104" r="62" fill="#F6C9A8"/>
+      <path d="M48 70 Q100 26 152 70 Q150 50 100 44 Q50 50 48 70Z" fill="#6B4423"/>
+      <circle cx="64" cy="120" r="9" fill="#F2A98F" opacity=".5"/><circle cx="136" cy="120" r="9" fill="#F2A98F" opacity=".5"/>`,
+    eyes:`<circle cx="76" cy="96" r="8" fill="#3a2d28"/><circle cx="124" cy="96" r="8" fill="#3a2d28"/>
+      <circle cx="73" cy="93" r="2.6" fill="#fff"/><circle cx="121" cy="93" r="2.6" fill="#fff"/>`,
+    nose:`<path d="M100 100 C94 112 88 122 90 128 Q100 134 110 128 C112 122 106 112 100 100Z" fill="#EBB089"/>
+      <ellipse cx="95" cy="127" rx="3" ry="2.4" fill="#9c6b4f"/><ellipse cx="105" cy="127" rx="3" ry="2.4" fill="#9c6b4f"/>`,
+    mouth:`<path d="M82 140 Q100 152 118 140" stroke="#C76B5A" stroke-width="6" fill="none" stroke-linecap="round"/>`
+  },
+  pig:{
+    name:"pig", say:"That's the pig's nose!", article:"the pig",
+    senses:["eyes","ears","nose","mouth"], box:[62,96,76,60], drop:[100,126],
+    ears:`<path d="M44 64 Q40 36 66 50 Q70 66 60 78Z" fill="#F28FB3"/><path d="M156 64 Q160 36 134 50 Q130 66 140 78Z" fill="#F28FB3"/>`,
+    base:`<ellipse cx="100" cy="110" rx="66" ry="58" fill="#F7A8C4"/>`,
+    eyes:`<circle cx="76" cy="94" r="7.5" fill="#3a2d28"/><circle cx="124" cy="94" r="7.5" fill="#3a2d28"/>
+      <circle cx="73.5" cy="91.5" r="2.4" fill="#fff"/><circle cx="121.5" cy="91.5" r="2.4" fill="#fff"/>`,
+    nose:`<ellipse cx="100" cy="126" rx="34" ry="26" fill="#F58FB6" stroke="#D96B93" stroke-width="4"/>
+      <ellipse cx="88" cy="126" rx="6" ry="9" fill="#B14E74"/><ellipse cx="112" cy="126" rx="6" ry="9" fill="#B14E74"/>`,
+    mouth:`<path d="M84 158 Q100 168 116 158" stroke="#D96B93" stroke-width="5" fill="none" stroke-linecap="round"/>`
+  },
+  cat:{
+    name:"cat", say:"That's the cat's nose!", article:"the cat",
+    senses:["eyes","ears","nose","mouth","whiskers"], box:[82,116,36,36], drop:[100,128],
+    ears:`<path d="M50 58 L70 96 L94 80Z" fill="#F6A24B"/><path d="M150 58 L130 96 L106 80Z" fill="#F6A24B"/>
+      <path d="M58 66 L72 90 L84 80Z" fill="#F58FB6"/><path d="M142 66 L128 90 L116 80Z" fill="#F58FB6"/>`,
+    base:`<ellipse cx="100" cy="114" rx="56" ry="54" fill="#F6A24B"/>`,
+    eyes:`<ellipse cx="78" cy="108" rx="8" ry="10" fill="#3a2d28"/><ellipse cx="122" cy="108" rx="8" ry="10" fill="#3a2d28"/>
+      <circle cx="75" cy="104" r="2.4" fill="#fff"/><circle cx="119" cy="104" r="2.4" fill="#fff"/>`,
+    nose:`<path d="M88 124 L112 124 L100 138 Z" fill="#F26C8E" stroke="#C94B6E" stroke-width="3" stroke-linejoin="round"/>
+      <path d="M100 138 V144" stroke="#C94B6E" stroke-width="3" stroke-linecap="round"/>`,
+    mouth:`<path d="M100 144 Q90 153 82 148 M100 144 Q110 153 118 148" stroke="#C98A53" stroke-width="3" fill="none" stroke-linecap="round"/>`,
+    whiskers:`<path d="M40 122 H76 M40 132 H76 M124 122 H160 M124 132 H160" stroke="#C98A53" stroke-width="3" stroke-linecap="round"/>`
+  },
+  dog:{
+    name:"dog", say:"That's the dog's nose!", article:"the dog",
+    senses:["eyes","ears","nose","mouth","whiskers"], box:[78,104,44,40], drop:[100,122],
+    ears:`<path d="M44 70 Q22 76 28 120 Q42 138 58 120 Q50 94 66 78Z" fill="#A9743E"/>
+      <path d="M156 70 Q178 76 172 120 Q158 138 142 120 Q150 94 134 78Z" fill="#A9743E"/>`,
+    base:`<ellipse cx="100" cy="106" rx="56" ry="54" fill="#D9A368"/><ellipse cx="100" cy="138" rx="40" ry="30" fill="#F0DCC0"/>`,
+    eyes:`<circle cx="80" cy="100" r="8" fill="#3a2d28"/><circle cx="120" cy="100" r="8" fill="#3a2d28"/>
+      <circle cx="77" cy="97" r="2.5" fill="#fff"/><circle cx="117" cy="97" r="2.5" fill="#fff"/>`,
+    nose:`<ellipse cx="100" cy="122" rx="20" ry="16" fill="#3a2d28"/>
+      <ellipse cx="93" cy="116" rx="6" ry="4" fill="#6f6056" opacity=".7"/>`,
+    mouth:`<path d="M100 138 V150 M100 150 Q86 158 80 152 M100 150 Q114 158 120 152" stroke="#8a6a45" stroke-width="4" fill="none" stroke-linecap="round"/>`,
+    whiskers:`<path d="M52 126 H80 M54 134 H80 M148 126 H120 M146 134 H120" stroke="#B98C5E" stroke-width="2.5" stroke-linecap="round"/>`
+  },
+  elephant:{
+    name:"elephant", say:"That's the elephant's nose! It's a long trunk!", article:"the elephant",
+    senses:["eyes","ears","nose"], box:[70,96,60,90], drop:[100,116],
+    ears:`<ellipse cx="46" cy="94" rx="34" ry="44" fill="#97A4B1"/><ellipse cx="154" cy="94" rx="34" ry="44" fill="#97A4B1"/>
+      <ellipse cx="50" cy="94" rx="20" ry="30" fill="#8694a2"/><ellipse cx="150" cy="94" rx="20" ry="30" fill="#8694a2"/>`,
+    base:`<ellipse cx="100" cy="92" rx="54" ry="50" fill="#A8B4C0"/>`,
+    eyes:`<circle cx="80" cy="82" r="7" fill="#3a2d28"/><circle cx="120" cy="82" r="7" fill="#3a2d28"/>
+      <circle cx="77.5" cy="79.5" r="2.2" fill="#fff"/><circle cx="117.5" cy="79.5" r="2.2" fill="#fff"/>`,
+    nose:`<path d="M90 100 Q86 130 84 150 Q83 172 100 176 Q117 172 116 158" fill="none" stroke="#A8B4C0" stroke-width="20" stroke-linecap="round"/>
+      <path d="M90 100 Q86 130 84 150 Q83 172 100 176 Q117 172 116 158" fill="none" stroke="#97A4B1" stroke-width="20" stroke-linecap="round" stroke-dasharray="2 12" opacity=".5"/>`,
+    mouth:``
+  },
+  rabbit:{
+    name:"rabbit", say:"That's the rabbit's nose!", article:"the rabbit",
+    senses:["eyes","ears","nose","mouth","whiskers"], box:[84,116,32,34], drop:[100,128],
+    ears:`<ellipse cx="78" cy="44" rx="15" ry="38" fill="#EDE7F2"/><ellipse cx="78" cy="46" rx="7" ry="28" fill="#F7C9D8"/>
+      <ellipse cx="122" cy="44" rx="15" ry="38" fill="#EDE7F2"/><ellipse cx="122" cy="46" rx="7" ry="28" fill="#F7C9D8"/>`,
+    base:`<ellipse cx="100" cy="118" rx="54" ry="50" fill="#EDE7F2"/>`,
+    eyes:`<circle cx="80" cy="108" r="7.5" fill="#3a2d28"/><circle cx="120" cy="108" r="7.5" fill="#3a2d28"/>
+      <circle cx="77.5" cy="105.5" r="2.3" fill="#fff"/><circle cx="117.5" cy="105.5" r="2.3" fill="#fff"/>`,
+    nose:`<path d="M90 126 Q100 118 110 126 Q108 134 100 138 Q92 134 90 126Z" fill="#F26C8E" stroke="#C94B6E" stroke-width="2.5"/>`,
+    mouth:`<path d="M100 138 V146 M100 146 Q92 152 86 148 M100 146 Q108 152 114 148" stroke="#C94B6E" stroke-width="2.5" fill="none" stroke-linecap="round"/>`,
+    whiskers:`<path d="M44 130 H80 M44 138 H80 M120 130 H156 M120 138 H156" stroke="#cdbfd6" stroke-width="3" stroke-linecap="round"/>`
+  }
+};
+const KEYS = Object.keys(A);
+const PART_ORDER=["ears","base","eyes","nose","mouth","whiskers"];
+function partsInner(key, exclude){
+  const a=A[key]; let s='';
+  PART_ORDER.forEach(p=>{ if(p==='base'){ s+=a.base; } else if(p!==exclude && a[p]) s+=a[p]; });
+  return s;
+}
+
+/* ---------- full-body person (separable parts) — viewBox 0 0 200 330 ---------- */
+const BODY = {
+  legs:`<path d="M88 196 L84 292" stroke="#4F73C9" stroke-width="24" stroke-linecap="round" fill="none"/>
+    <path d="M112 196 L116 292" stroke="#4F73C9" stroke-width="24" stroke-linecap="round" fill="none"/>`,
+  feet:`<ellipse cx="80" cy="304" rx="19" ry="11" fill="#2D2A40"/><ellipse cx="120" cy="304" rx="19" ry="11" fill="#2D2A40"/>`,
+  body:`<path d="M68 118 Q100 108 132 118 L136 198 Q100 208 64 198 Z" fill="#2EBFA5"/>
+    <path d="M72 120 Q58 126 54 140" stroke="#27A892" stroke-width="20" fill="none" stroke-linecap="round"/>
+    <path d="M128 120 Q142 126 146 140" stroke="#27A892" stroke-width="20" fill="none" stroke-linecap="round"/>`,
+  arms:`<path d="M74 126 Q52 142 46 182" fill="none" stroke="#F6C9A8" stroke-width="17" stroke-linecap="round"/>
+    <path d="M126 126 Q148 142 154 182" fill="none" stroke="#F6C9A8" stroke-width="17" stroke-linecap="round"/>`,
+  hands:`<circle cx="46" cy="184" r="12" fill="#F6C9A8"/><circle cx="154" cy="184" r="12" fill="#F6C9A8"/>`,
+  ears:`<ellipse cx="60" cy="64" rx="8" ry="11" fill="#F6C9A8"/><ellipse cx="140" cy="64" rx="8" ry="11" fill="#F6C9A8"/>
+    <ellipse cx="61" cy="64" rx="4" ry="6" fill="#E5A982"/><ellipse cx="139" cy="64" rx="4" ry="6" fill="#E5A982"/>`,
+  head:`<rect x="91" y="90" width="18" height="22" rx="8" fill="#F6C9A8"/>
+    <circle cx="100" cy="62" r="40" fill="#F6C9A8"/>
+    <circle cx="74" cy="74" r="7" fill="#F2A98F" opacity=".5"/><circle cx="126" cy="74" r="7" fill="#F2A98F" opacity=".5"/>`,
+  hair:`<path d="M58 58 Q60 22 100 20 Q140 22 142 58 Q140 40 100 34 Q60 40 58 58Z" fill="#6B4423"/>`,
+  eyes:`<circle cx="86" cy="58" r="6" fill="#3a2d28"/><circle cx="114" cy="58" r="6" fill="#3a2d28"/>
+    <circle cx="84" cy="55.5" r="2" fill="#fff"/><circle cx="112" cy="55.5" r="2" fill="#fff"/>`,
+  nose:`<path d="M100 62 C97 70 94 76 96 80 Q100 83 104 80 C106 76 103 70 100 62Z" fill="#EBB089"/>`,
+  mouth:`<path d="M88 88 Q100 98 112 88" stroke="#C76B5A" stroke-width="4" fill="none" stroke-linecap="round"/>`
+};
+const BODY_ORDER=["legs","feet","body","arms","hands","ears","head","hair","eyes","nose","mouth"];
+const BODY_DEPS={ legs:["feet"], arms:["hands"] };            // hiding a part hides its dependents
+const BODY_ROUNDS=["arms","hands","legs","feet","hair","ears","eyes","nose","mouth"];
+const BODY_INFO={
+  arms:{word:"Arms",  act:"Wave your arms!",        clip:"body_arms"},
+  hands:{word:"Hands", act:"Clap your hands!",       clip:"body_hands"},
+  legs:{word:"Legs",  act:"We run with our legs!",  clip:"body_legs"},
+  feet:{word:"Feet",  act:"Stomp your feet!",        clip:"body_feet"},
+  ears:{word:"Ears",  act:"Wiggle your ears!",       clip:"body_ears"},
+  eyes:{word:"Eyes",  act:"Blink your eyes!",        clip:"body_eyes"},
+  nose:{word:"Nose",  act:"Touch your nose!",        clip:"body_nose"},
+  mouth:{word:"Mouth", act:"Open your mouth!",        clip:"body_mouth"},
+  hair:{word:"Hair",  act:"Touch your hair!",        clip:"body_hair"}
+};
+function bodyInner(exclude){
+  const hide=new Set([exclude, ...((BODY_DEPS[exclude]||[]))]);
+  let s=''; BODY_ORDER.forEach(p=>{ if(!hide.has(p)) s+=BODY[p]; }); return s;
+}
+function bodySVG(exclude){ return `<svg viewBox="0 0 200 330" aria-label="body">${bodyInner(exclude)}</svg>`; }
+
+/* ---------- face-part icons for the memory game ---------- */
+const PARTICONS = {
+  eyes:`<svg viewBox="0 0 100 100" aria-label="eyes"><path d="M20 36 Q33 27 46 35" stroke="#6B4423" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M54 35 Q67 27 80 36" stroke="#6B4423" stroke-width="5" fill="none" stroke-linecap="round"/><ellipse cx="33" cy="56" rx="15" ry="17" fill="#fff" stroke="#3a2d28" stroke-width="3"/><ellipse cx="67" cy="56" rx="15" ry="17" fill="#fff" stroke="#3a2d28" stroke-width="3"/><circle cx="33" cy="58" r="7" fill="#3a2d28"/><circle cx="67" cy="58" r="7" fill="#3a2d28"/><circle cx="30" cy="55" r="2.4" fill="#fff"/><circle cx="64" cy="55" r="2.4" fill="#fff"/></svg>`,
+  ears:`<svg viewBox="0 0 100 100" aria-label="ear"><path d="M60 18 C36 18 28 44 32 62 C35 80 50 86 60 80 C51 77 47 68 51 63 C60 65 67 57 63 47 C69 40 70 26 60 18Z" fill="#F6C9A8" stroke="#E0A87E" stroke-width="3" stroke-linejoin="round"/><path d="M54 38 Q63 46 56 58" stroke="#E0A87E" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>`,
+  nose:`<svg viewBox="0 0 100 100" aria-label="nose"><path d="M50 20 C41 44 32 62 36 73 Q50 84 64 73 C68 62 59 44 50 20Z" fill="#F6C9A8" stroke="#E0A87E" stroke-width="3"/><ellipse cx="43" cy="70" rx="5" ry="4" fill="#C98A6A"/><ellipse cx="57" cy="70" rx="5" ry="4" fill="#C98A6A"/></svg>`,
+  mouth:`<svg viewBox="0 0 100 100" aria-label="mouth"><path d="M20 40 Q50 32 80 40 Q73 66 50 70 Q27 66 20 40Z" fill="#C94B6E"/><path d="M29 44 Q50 49 71 44 L66 55 Q50 59 34 55 Z" fill="#fff"/><path d="M22 41 Q50 50 78 41" stroke="#9c2f4d" stroke-width="2" fill="none"/></svg>`
+};
+const MEM_PARTS=["eyes","ears","nose","mouth"];
+const MEM_WORD={eyes:"Eyes",ears:"Ears",nose:"Nose",mouth:"Mouth"};
+const MEM_MATCH={
+  eyes:"Eyes! You found two eyes!",
+  ears:"Ears! You found two ears!",
+  nose:"A nose! You found two noses!",
+  mouth:"A mouth! You found two mouths!"
+};
+
+/* ---------- teacher settings (persisted, with safe fallback) ---------- */
+let settings = { animals: KEYS.slice(), smells: [], mode:'easy' };
+const SKEY='nose_knows_v2_settings';
+function activeAnimals(){ const a=settings.animals.filter(k=>KEYS.includes(k)); return a.length>=3?a:KEYS.slice(); }
+function activeSmells(){ const all=SMELLS.map(s=>s.key); const a=settings.smells.filter(k=>all.includes(k)); return a.length?a:all; }
+function loadSettings(){ try{
+  const s=JSON.parse(localStorage.getItem(SKEY));
+  if(s){ if(Array.isArray(s.animals)) settings.animals=s.animals.filter(k=>KEYS.includes(k));
+         if(Array.isArray(s.smells)) settings.smells=s.smells;
+         if(s.mode==='easy'||s.mode==='hard') settings.mode=s.mode; }
+}catch(e){} }
+function saveSettings(){ try{ localStorage.setItem(SKEY,JSON.stringify(settings)); }catch(e){} }
+
+function faceSVG(key, withNose){
+  const a=A[key];
+  return `<svg viewBox="0 0 200 200" aria-label="${a.name} face">${partsInner(key, withNose?null:'nose')}</svg>`;
+}
+function faceMissing(key, part){
+  const a=A[key];
+  return `<svg viewBox="0 0 200 200" aria-label="${a.name} face">${partsInner(key, part)}</svg>`;
+}
+function noseSVG(key){
+  const a=A[key]; const [x,y,w,h]=a.box;
+  return `<svg viewBox="${x} ${y} ${w} ${h}" aria-label="${a.name} nose">${a.nose}</svg>`;
+}
+
+/* ---------- shuffle bag (each item once per round) ---------- */
+function shuffle(arr){ const a=arr.slice(); for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]];} return a; }
+
+/* ============================================================
+   TABS
+   ============================================================ */
+const panels=document.querySelectorAll('.panel');
+const tabs=document.querySelectorAll('.tab');
+function show(id){
+  panels.forEach(p=>p.classList.toggle('active',p.id===id));
+  tabs.forEach(t=>t.setAttribute('aria-selected', t.dataset.panel===id));
+  if(id==='intro') introRender();
+  if(id==='match') matchStart();
+  if(id==='smell') narrate('smell_intro', "We use our nose to smell!");
+  if(id==='senses') senseStart();
+  if(id==='body') bodyStart();
+  if(id==='memory') memStart();
+}
+tabs.forEach(t=>t.addEventListener('click',()=>{ firstGesture(); show(t.dataset.panel); }));
+
+/* ---------- home screen ---------- */
+const HOME_CARDS=[
+  {panel:'intro',  l:"What's Missing?", s:"Find the missing nose",        bg:"#FFE9EF", art:()=>faceSVG('human',false)},
+  {panel:'match',  l:"Match the Nose!", s:"Match each nose to its face",  bg:"#E9FBF6", art:()=>faceSVG('pig',true)},
+  {panel:'smell',  l:"We Smell!",       s:"Smell lovely things",          bg:"#FFF6E0", art:()=>SMELLS[0].svg},
+  {panel:'senses', l:"5 Senses",        s:"See · hear · smell · taste · touch", bg:"#EAF7FB", art:()=>faceSVG('cat',true)},
+  {panel:'body',   l:"My Body",         s:"Name the body parts",          bg:"#F0FBF7", art:()=>bodySVG(null)},
+  {panel:'memory', l:"Memory Game",     s:"Find the matching pairs",      bg:"#FFF0F3", art:()=>`<svg viewBox="0 0 100 100"><rect x="14" y="30" width="42" height="54" rx="8" fill="#FFC94D" transform="rotate(-9 35 57)"/><rect x="42" y="22" width="42" height="54" rx="8" fill="#2EBFA5" transform="rotate(8 63 49)"/><text x="63" y="58" font-size="32" text-anchor="middle" fill="#fff" font-family="Arial" font-weight="bold">?</text></svg>`}
+];
+function buildHome(){
+  const g=document.getElementById('homeGrid'); g.innerHTML='';
+  HOME_CARDS.forEach(c=>{
+    const b=document.createElement('button');
+    b.className='homecard'+(c.wide?' wide':''); b.style.background=c.bg;
+    b.innerHTML=`<span class="ic">${c.art()}</span><span class="tx"><span class="l">${c.l}</span><span class="s">${c.s}</span></span>`;
+    b.addEventListener('click',()=>{ firstGesture(); show(c.panel); });
+    g.appendChild(b);
+  });
+}
+document.getElementById('homeBtn').addEventListener('click',()=>{ firstGesture(); show('home'); });
+
+/* ---------- sound toggle ---------- */
+let audioOn=true;
+const soundBtn=document.getElementById('soundToggle');
+soundBtn.addEventListener('click',()=>{
+  firstGesture();
+  audioOn=!audioOn; Sound.setOn(audioOn); Speech.setOn(audioOn);
+  soundBtn.textContent=audioOn?'🔊':'🔇';
+});
+
+let gestured=false;
+function firstGesture(){ if(gestured)return; gestured=true; Sound.unlock(); Speech.unlock(); }
+document.body.addEventListener('pointerdown',firstGesture,{once:true});
+
+/* ============================================================
+   SECTION 1 — WHAT'S MISSING?
+   ============================================================ */
+let introBag=[], introKey=null, introRevealed=false;
+const introFace=document.getElementById('introFace');
+const introSay=document.getElementById('introSay');
+const introSub=document.getElementById('introSub');
+function nextIntroKey(){ if(!introBag.length) introBag=shuffle(activeAnimals()); return introBag.pop(); }
+function introRender(){
+  introKey=introKey||nextIntroKey();
+  introRevealed=false;
+  introFace.innerHTML=faceSVG(introKey,false);
+  introSay.innerHTML='&nbsp;';
+  introSub.textContent='Tap the face to find out!';
+  narrate('intro_whats_missing', "What's missing?");
+}
+function introReveal(){
+  if(introRevealed) return;
+  introRevealed=true;
+  introFace.innerHTML=faceSVG(introKey,true);
+  const a=A[introKey];
+  const art=/^[aeiou]/i.test(a.name)?"An":"A";
+  introSay.textContent="The nose! 👃";
+  introSub.textContent=art+" "+a.name+" needs a nose to smell.";
+  Sound.good();
+  narrate('intro_reveal_'+introKey, "The nose! "+art+" "+a.name+" needs a nose to smell.");
+}
+introFace.addEventListener('click',introReveal);
+document.getElementById('introReveal').addEventListener('click',()=>{firstGesture();introReveal();});
+document.getElementById('introNext').addEventListener('click',()=>{ firstGesture(); introKey=nextIntroKey(); introRender(); });
+
+/* ============================================================
+   SECTION 2 — MATCH THE NOSE!
+   ============================================================ */
+let mode='easy';           // 'easy' (tap) | 'hard' (drag)
+let matchBag=[], curKey=null, roundTotal=0, roundDone=0, solved=false;
+const matchFace=document.getElementById('matchFace');
+const dropzone=document.getElementById('dropzone');
+const tray=document.getElementById('tray');
+const matchSay=document.getElementById('matchSay');
+const matchPrompt=document.getElementById('matchPrompt');
+const scorebar=document.getElementById('scorebar');
+
+document.getElementById('modeEasy').addEventListener('click',()=>setMode('easy'));
+document.getElementById('modeHard').addEventListener('click',()=>setMode('hard'));
+function reflectModeBtns(){
+  const m=mode;
+  ['modeEasy','setEasy'].forEach(id=>{const el=document.getElementById(id); if(el) el.setAttribute('aria-pressed',m==='easy');});
+  ['modeHard','setHard'].forEach(id=>{const el=document.getElementById(id); if(el) el.setAttribute('aria-pressed',m==='hard');});
+}
+function setMode(m){
+  mode=m; settings.mode=m; reflectModeBtns(); saveSettings();
+  if(document.getElementById('match').classList.contains('active')) matchStart();
+}
+document.getElementById('matchRestart').addEventListener('click',()=>{firstGesture();matchStart();});
+
+function buildScorebar(){
+  scorebar.innerHTML='';
+  for(let i=0;i<roundTotal;i++){ const p=document.createElement('div'); p.className='pip'+(i<roundDone?' done':''); scorebar.appendChild(p); }
+}
+function matchStart(){
+  matchBag=shuffle(activeAnimals()); roundTotal=activeAnimals().length; roundDone=0; buildScorebar();
+  nextMatch();
+}
+function nextMatch(){
+  if(!matchBag.length){ matchWin(); return; }
+  solved=false;
+  curKey=matchBag.pop();
+  // face with no nose + dropzone
+  matchFace.classList.remove('solved','over');
+  matchFace.innerHTML=faceSVG(curKey,false);
+  matchFace.appendChild(dropzone);
+  positionDropzone();
+  matchSay.innerHTML='&nbsp;';
+  matchPrompt.textContent = "Find the "+A[curKey].name+"'s nose!";
+  // options: correct + 2 distractors
+  const others=shuffle(activeAnimals().filter(k=>k!==curKey)).slice(0,2);
+  const opts=shuffle([curKey,...others]);
+  tray.innerHTML='';
+  opts.forEach(k=>{
+    const b=document.createElement('button');
+    b.className='chip'; b.dataset.key=k; b.innerHTML=noseSVG(k);
+    b.setAttribute('aria-label',A[k].name+" nose");
+    tray.appendChild(b);
+    if(mode==='easy') b.addEventListener('click',()=>onTap(b,k));
+    else attachDrag(b,k);
+  });
+  narrate('match_find_'+curKey, "Find the "+A[curKey].name+"'s nose.");
+}
+function positionDropzone(){
+  const a=A[curKey]; const [dx,dy]=a.drop;
+  const sz=matchFace.clientWidth||200;
+  const s=sz/200;
+  let d= a.name==='elephant'?44 : 56;
+  dropzone.style.width=dropzone.style.height=(d*s)+'px';
+  dropzone.style.left=(dx*s - d*s/2)+'px';
+  dropzone.style.top=(dy*s - d*s/2)+'px';
+}
+window.addEventListener('resize',()=>{ if(document.getElementById('match').classList.contains('active')&&!solved) positionDropzone(); });
+
+function onTap(btn,key){
+  firstGesture();
+  if(solved) return;
+  if(key===curKey){ solveCurrent(btn); }
+  else { Sound.nope(); btn.classList.add('wrong'); matchSay.textContent="Try again! 🤔"; narrate('match_tryagain',"Try again!"); setTimeout(()=>btn.classList.remove('wrong'),420); }
+}
+
+function solveCurrent(btn){
+  solved=true;
+  // place nose on face
+  matchFace.classList.add('solved');
+  matchFace.innerHTML=faceSVG(curKey,true);
+  Sound.good();
+  matchSay.textContent=A[curKey].say.replace(/!.*$/,'!');
+  narrate('match_correct_'+curKey, A[curKey].say);
+  roundDone++; buildScorebar();
+  // disable tray
+  [...tray.children].forEach(c=>c.classList.add('gone'));
+  setTimeout(nextMatch,1300);
+}
+
+/* ----- drag (pointer events; works for touch + mouse) ----- */
+let drag=null;
+function attachDrag(btn,key){
+  btn.addEventListener('pointerdown',e=>{
+    firstGesture();
+    if(solved) return;
+    e.preventDefault();
+    const r=btn.getBoundingClientRect();
+    const ghost=document.createElement('div');
+    ghost.className='floatnose'; ghost.innerHTML=noseSVG(key);
+    ghost.style.width=r.width+'px'; ghost.style.height=r.height+'px';
+    document.body.appendChild(ghost);
+    btn.classList.add('dragging');
+    drag={btn,key,ghost,ox:e.clientX-(r.left+r.width/2),oy:e.clientY-(r.top+r.height/2)};
+    moveGhost(e.clientX,e.clientY);
+    btn.setPointerCapture(e.pointerId);
+  });
+  btn.addEventListener('pointermove',e=>{
+    if(!drag||drag.btn!==btn) return;
+    e.preventDefault();
+    moveGhost(e.clientX,e.clientY);
+    const dz=dropzone.getBoundingClientRect();
+    const inside = e.clientX>dz.left-30&&e.clientX<dz.right+30&&e.clientY>dz.top-30&&e.clientY<dz.bottom+30;
+    matchFace.classList.toggle('over',inside&&!solved);
+  });
+  function end(e){
+    if(!drag||drag.btn!==btn) return;
+    const dz=dropzone.getBoundingClientRect();
+    const hit = e.clientX>dz.left-30&&e.clientX<dz.right+30&&e.clientY>dz.top-30&&e.clientY<dz.bottom+30;
+    matchFace.classList.remove('over');
+    drag.ghost.remove(); btn.classList.remove('dragging');
+    const k=drag.key, b=drag.btn; drag=null;
+    if(hit){
+      if(k===curKey){ solveCurrent(b); }
+      else { Sound.nope(); b.classList.add('wrong'); matchSay.textContent="That's not it — try again! 🤔"; narrate('match_tryagain',"Try again!"); setTimeout(()=>b.classList.remove('wrong'),420); }
+    }
+  }
+  btn.addEventListener('pointerup',end);
+  btn.addEventListener('pointercancel',end);
+}
+function moveGhost(x,y){ if(!drag)return; drag.ghost.style.left=0;drag.ghost.style.top=0;
+  drag.ghost.style.transform=`translate(${x-drag.ox- (parseFloat(drag.ghost.style.width)/2)}px,${y-drag.oy-(parseFloat(drag.ghost.style.height)/2)}px)`; }
+
+function matchWin(){
+  matchPrompt.textContent="You did it! 🎉";
+  matchSay.textContent="You matched every nose!";
+  matchFace.classList.add('solved');
+  matchFace.innerHTML=`<svg viewBox="0 0 200 200"><text x="100" y="130" font-size="120" text-anchor="middle">🏆</text></svg>`;
+  tray.innerHTML='';
+  Sound.win(); narrate('match_win', "Hooray! You matched every nose!");
+  confettiBurst();
+}
+
+/* ============================================================
+   SECTION 3 — WE SMELL!
+   ============================================================ */
+const SMELLS=[
+  {key:'flower', label:'Flower', say:"Mmm, the flower smells sweet!",
+   svg:`<svg viewBox="0 0 100 100"><line x1="50" y1="58" x2="50" y2="90" stroke="#5BA85A" stroke-width="6" stroke-linecap="round"/><path d="M50 78 Q34 74 30 86 Q46 88 50 78" fill="#5BA85A"/>
+     ${[0,72,144,216,288].map(a=>`<ellipse cx="50" cy="30" rx="11" ry="17" fill="#FF8FA8" transform="rotate(${a} 50 48)"/>`).join('')}
+     <circle cx="50" cy="48" r="11" fill="#FFC94D"/></svg>`},
+  {key:'lemon', label:'Lemon', say:"The lemon smells fresh and sour!",
+   svg:`<svg viewBox="0 0 100 100"><ellipse cx="50" cy="54" rx="32" ry="26" fill="#FFD43B"/><ellipse cx="50" cy="54" rx="32" ry="26" fill="none" stroke="#E0B400" stroke-width="3"/><path d="M78 40 q10 -8 12 -2 q-2 8 -10 8" fill="#7BC24A"/><ellipse cx="42" cy="48" rx="6" ry="3" fill="#fff" opacity=".5"/></svg>`},
+  {key:'coffee', label:'Coffee', say:"The coffee smells warm and strong!",
+   svg:`<svg viewBox="0 0 100 100"><path d="M30 76 Q30 86 42 86 H62 Q74 86 74 76 V50 H30Z" fill="#8B5E3C"/><rect x="28" y="44" width="48" height="10" rx="5" fill="#A9744F"/><path d="M74 56 q16 0 16 12 t-16 10" fill="none" stroke="#A9744F" stroke-width="6"/><path d="M44 30 q-6 8 0 16 M56 28 q-6 8 0 16" stroke="#cbb8a8" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"/></svg>`},
+  {key:'bread', label:'Bread', say:"The fresh bread smells yummy!",
+   svg:`<svg viewBox="0 0 100 100"><path d="M22 64 Q18 40 50 40 Q82 40 78 64 Q78 74 68 74 H32 Q22 74 22 64Z" fill="#E0A86A"/><path d="M22 62 H78" stroke="#C98545" stroke-width="3"/><path d="M40 48 q4 -6 8 0 M54 48 q4 -6 8 0" stroke="#C98545" stroke-width="3" fill="none" stroke-linecap="round"/></svg>`},
+  {key:'fish', label:'Fish', say:"The fish smells like the sea!",
+   svg:`<svg viewBox="0 0 100 100"><path d="M24 50 Q48 30 70 50 Q48 70 24 50Z" fill="#6FC3D6"/><path d="M68 50 L88 38 V62Z" fill="#5AA8BB"/><circle cx="38" cy="48" r="4" fill="#23404a"/><path d="M30 50 q6 4 14 0" stroke="#3a7d8c" stroke-width="2.5" fill="none"/></svg>`},
+  {key:'soap', label:'Mint', say:"The mint smells cool and clean!",
+   svg:`<svg viewBox="0 0 100 100"><path d="M50 78 C30 64 30 42 50 28 C70 42 70 64 50 78Z" fill="#7ED9A6"/><path d="M50 30 V76" stroke="#4FAE7A" stroke-width="3"/><path d="M50 42 Q40 44 36 52 M50 54 Q40 56 36 64 M50 42 Q60 44 64 52 M50 54 Q60 56 64 64" stroke="#4FAE7A" stroke-width="2.5" fill="none"/></svg>`}
+];
+const bigNose=document.getElementById('bigNose');
+const smellGrid=document.getElementById('smellGrid');
+const smellSay=document.getElementById('smellSay');
+bigNose.innerHTML=`<svg viewBox="0 0 100 100"><path d="M50 16 C40 40 30 58 33 70 Q50 84 67 70 C70 58 60 40 50 16Z" fill="#F6C9A8" stroke="#E0A87E" stroke-width="3"/><ellipse cx="42" cy="68" rx="5" ry="4" fill="#9c6b4f"/><ellipse cx="58" cy="68" rx="5" ry="4" fill="#9c6b4f"/></svg>`;
+function renderSmells(){
+  const live=activeSmells();
+  smellGrid.innerHTML='';
+  SMELLS.filter(s=>live.includes(s.key)).forEach(s=>{
+    const b=document.createElement('button');
+    b.className='smell'; b.innerHTML=s.svg+`<span class="lbl">${s.label}</span>`;
+    b.setAttribute('aria-label','Smell the '+s.label);
+    b.addEventListener('click',()=>{
+      firstGesture();
+      b.classList.remove('sniff'); void b.offsetWidth; b.classList.add('sniff');
+      bigNose.classList.add('sniffing'); setTimeout(()=>bigNose.classList.remove('sniffing'),1400);
+      Sound.sniff();
+      smellSay.textContent=s.say;
+      setTimeout(()=>narrate('smell_'+s.key, s.say),120);
+    });
+    smellGrid.appendChild(b);
+  });
+}
+
+/* ============================================================
+   SECTION 4 — 5 SENSES ("What's missing?" for every face part)
+   ============================================================ */
+const SENSES={
+  eyes:    {word:"Eyes",    sense:"see",   line:"Eyes! We see with our eyes.",                              color:"2EBFA5", clip:"sense_eyes"},
+  ears:    {word:"Ears",    sense:"hear",  line:"Ears! We hear with our ears.",                             color:"E0A400", clip:"sense_ears"},
+  nose:    {word:"A nose",  sense:"smell", line:"A nose! We smell with our nose.",                          color:"E8556A", clip:"sense_nose"},
+  mouth:   {word:"A mouth", sense:"taste", line:"A mouth! We taste with our mouth.",                        color:"FF7A8A", clip:"sense_mouth"},
+  whiskers:{word:"Whiskers",sense:"touch", line:"Whiskers! Animals feel and touch with their whiskers.",   color:"5BA85A", clip:"sense_whiskers"}
+};
+const senseFace=document.getElementById('senseFace');
+const senseBadge=document.getElementById('senseBadge');
+const sensePrompt=document.getElementById('sensePrompt');
+let senseFilter='all', senseBag=[], curPair=null, senseShown=false;
+
+function sensePairs(sense){
+  const out=[];
+  KEYS.forEach(k=>{ A[k].senses.forEach(p=>{ if(sense==='all'||p===sense) out.push([k,p]); }); });
+  return out;
+}
+function senseStart(){
+  senseBag=shuffle(sensePairs(senseFilter));
+  senseNext();
+}
+function senseNext(){
+  if(!senseBag.length) senseBag=shuffle(sensePairs(senseFilter));
+  curPair=senseBag.pop();
+  senseShown=false;
+  const [k,part]=curPair;
+  senseFace.innerHTML=faceMissing(k,part);
+  senseBadge.innerHTML='&nbsp;';
+  sensePrompt.textContent="What's missing?";
+  narrate('intro_whats_missing', "What's missing?");
+}
+function senseReveal(){
+  if(senseShown||!curPair) return;
+  senseShown=true;
+  const [k,part]=curPair;
+  senseFace.innerHTML=faceSVG(k,true);
+  const S=SENSES[part];
+  senseBadge.innerHTML=`<span class="pill" style="background:${'#'+S.color}">${S.word} — we ${S.sense.toUpperCase()}!</span>`;
+  Sound.good();
+  narrate(S.clip, S.line);
+}
+document.querySelectorAll('#senseFilter button').forEach(b=>{
+  b.addEventListener('click',()=>{
+    firstGesture();
+    senseFilter=b.dataset.sense;
+    document.querySelectorAll('#senseFilter button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+    senseStart();
+  });
+});
+senseFace.addEventListener('click',()=>{firstGesture();senseReveal();});
+document.getElementById('senseReveal').addEventListener('click',()=>{firstGesture();senseReveal();});
+document.getElementById('senseNext').addEventListener('click',()=>{firstGesture();senseNext();});
+
+/* ============================================================
+   SECTION 5 — MY BODY ("What's missing?" for the whole body)
+   ============================================================ */
+const bodyFig=document.getElementById('bodyFig');
+const bodyBadge=document.getElementById('bodyBadge');
+const bodySay=document.getElementById('bodySay');
+const bodyPrompt=document.getElementById('bodyPrompt');
+let bodyBag=[], curBodyPart=null, bodyShown=false;
+function bodyStart(){ bodyBag=shuffle(BODY_ROUNDS.slice()); bodyNext(); }
+function bodyNext(){
+  if(!bodyBag.length) bodyBag=shuffle(BODY_ROUNDS.slice());
+  curBodyPart=bodyBag.pop(); bodyShown=false;
+  bodyFig.innerHTML=bodySVG(curBodyPart);
+  bodyBadge.innerHTML='&nbsp;'; bodySay.innerHTML='&nbsp;';
+  bodyPrompt.textContent="What's missing?";
+  narrate('intro_whats_missing', "What's missing?");
+}
+function bodyReveal(){
+  if(bodyShown||!curBodyPart) return;
+  bodyShown=true;
+  bodyFig.innerHTML=bodySVG(null);
+  const I=BODY_INFO[curBodyPart];
+  bodyBadge.innerHTML=`<span class="pill" style="background:#2EBFA5">${I.word}!</span>`;
+  bodySay.textContent=I.act;
+  Sound.good();
+  narrate(I.clip, I.word+"! "+I.act);
+}
+bodyFig.addEventListener('click',()=>{firstGesture();bodyReveal();});
+document.getElementById('bodyReveal').addEventListener('click',()=>{firstGesture();bodyReveal();});
+document.getElementById('bodyNext').addEventListener('click',()=>{firstGesture();bodyNext();});
+
+/* ============================================================
+   SECTION 6 — FACE MEMORY (match the pairs)
+   ============================================================ */
+const memGrid=document.getElementById('memGrid');
+const memScore=document.getElementById('memScore');
+let memFirst=null, memLock=false, memMatched=0;
+function buildMemScore(){
+  memScore.innerHTML='';
+  for(let i=0;i<MEM_PARTS.length;i++){ const p=document.createElement('div'); p.className='pip'+(i<memMatched?' done':''); memScore.appendChild(p); }
+}
+function memStart(){
+  memMatched=0; memFirst=null; memLock=false;
+  const deck=shuffle([...MEM_PARTS, ...MEM_PARTS]);
+  memGrid.innerHTML='';
+  deck.forEach(part=>{
+    const card=document.createElement('button');
+    card.className='memcard'; card.dataset.part=part;
+    card.setAttribute('aria-label','card');
+    card.innerHTML=`<span class="inner"><span class="face back">?</span><span class="face front">${PARTICONS[part]}<span class="lbl">${MEM_WORD[part]}</span></span></span>`;
+    card.addEventListener('click',()=>memFlip(card));
+    memGrid.appendChild(card);
+  });
+  buildMemScore();
+  narrate('memory_intro', "Find two cards that are the same!");
+}
+function memFlip(card){
+  firstGesture();
+  if(memLock||card.classList.contains('flipped')||card.classList.contains('matched')) return;
+  card.classList.add('flipped'); Sound.pop();
+  if(!memFirst){ memFirst=card; return; }
+  const a=memFirst, c2=card; memFirst=null;
+  if(a.dataset.part===c2.dataset.part){
+    memLock=true;
+    setTimeout(()=>{
+      a.classList.add('matched'); c2.classList.add('matched');
+      memMatched++; buildMemScore(); Sound.good();
+      narrate('memory_match_'+a.dataset.part, MEM_MATCH[a.dataset.part]);
+      memLock=false;
+      if(memMatched===MEM_PARTS.length) setTimeout(memWin,500);
+    },360);
+  } else {
+    memLock=true; Sound.nope();
+    setTimeout(()=>{ a.classList.remove('flipped'); c2.classList.remove('flipped'); memLock=false; },850);
+  }
+}
+function memWin(){ Sound.win(); narrate('memory_win', "Wonderful! You found all the parts!"); confettiBurst(); }
+document.getElementById('memRestart').addEventListener('click',()=>{firstGesture();memStart();});
+
+/* ---------- confetti ---------- */
+const confetti=document.getElementById('confetti');
+function confettiBurst(){
+  confetti.classList.add('go'); confetti.innerHTML='';
+  const cols=['#FF7A8A','#FFC94D','#2EBFA5','#8BD17C','#7BB5FF','#C58BFF'];
+  for(let i=0;i<70;i++){
+    const c=document.createElement('div'); c.className='conf';
+    c.style.left=Math.random()*100+'vw'; c.style.top=(-10-Math.random()*20)+'vh';
+    c.style.background=cols[i%cols.length];
+    c.style.animation=`fall ${1.6+Math.random()*1.4}s ${Math.random()*.5}s linear forwards`;
+    confetti.appendChild(c);
+  }
+  setTimeout(()=>{confetti.classList.remove('go');confetti.innerHTML='';},3400);
+}
+
+/* ============================================================
+   TEACHER SETTINGS PANEL
+   ============================================================ */
+const overlay=document.getElementById('overlay');
+const animalPicks=document.getElementById('animalPicks');
+const smellPicks=document.getElementById('smellPicks');
+const animalHint=document.getElementById('animalHint');
+const smellHint=document.getElementById('smellHint');
+const voiceBadge=document.getElementById('voiceBadge');
+
+function updateVoiceBadge(){
+  const n=clipsLoaded();
+  voiceBadge.textContent = n>0 ? `🎙️ ${n} recorded clip${n>1?'s':''} loaded`
+                                : '🔈 Using read-aloud voice (no clips yet)';
+}
+function buildPicks(){
+  animalPicks.innerHTML='';
+  KEYS.forEach(k=>{
+    const on=settings.animals.includes(k);
+    const b=document.createElement('button');
+    b.className='pick'; b.setAttribute('aria-pressed',on); b.dataset.k=k;
+    b.innerHTML=faceSVG(k,true)+`<span class="pname">${A[k].name}</span>`;
+    b.addEventListener('click',()=>toggleAnimal(k,b));
+    animalPicks.appendChild(b);
+  });
+  smellPicks.innerHTML='';
+  SMELLS.forEach(s=>{
+    const on = settings.smells.length ? settings.smells.includes(s.key) : true;
+    const b=document.createElement('button');
+    b.className='pick'; b.setAttribute('aria-pressed',on); b.dataset.k=s.key;
+    b.innerHTML=s.svg+`<span class="pname">${s.label}</span>`;
+    b.addEventListener('click',()=>toggleSmell(s.key,b));
+    smellPicks.appendChild(b);
+  });
+  updateVoiceBadge();
+}
+function toggleAnimal(k,b){
+  const on=b.getAttribute('aria-pressed')==='true';
+  if(on){
+    if(settings.animals.length<=3){ animalHint.textContent="Keep at least 3 animals for matching."; animalHint.style.color='var(--rose-deep)'; return; }
+    settings.animals=settings.animals.filter(x=>x!==k);
+  } else if(!settings.animals.includes(k)){ settings.animals.push(k); }
+  b.setAttribute('aria-pressed',String(!on));
+  animalHint.textContent="Pick at least 3 for the matching game."; animalHint.style.color='';
+  saveSettings(); applyLive();
+}
+function toggleSmell(k,b){
+  if(!settings.smells.length) settings.smells=SMELLS.map(s=>s.key);
+  const on=b.getAttribute('aria-pressed')==='true';
+  if(on){
+    if(settings.smells.length<=1){ smellHint.textContent="Keep at least 1 smell."; smellHint.style.color='var(--rose-deep)'; return; }
+    settings.smells=settings.smells.filter(x=>x!==k);
+  } else if(!settings.smells.includes(k)){ settings.smells.push(k); }
+  b.setAttribute('aria-pressed',String(!on));
+  smellHint.textContent="Pick at least 1."; smellHint.style.color='';
+  saveSettings(); renderSmells();
+}
+function applyLive(){
+  introBag=[]; introKey=null;
+  if(document.getElementById('intro').classList.contains('active')) introRender();
+  if(document.getElementById('match').classList.contains('active')) matchStart();
+}
+document.getElementById('setEasy').addEventListener('click',()=>setMode('easy'));
+document.getElementById('setHard').addEventListener('click',()=>setMode('hard'));
+document.getElementById('settingsBtn').addEventListener('click',()=>{ firstGesture(); buildPicks(); reflectModeBtns(); overlay.classList.add('open'); });
+document.getElementById('settingsDone').addEventListener('click',()=>overlay.classList.remove('open'));
+overlay.addEventListener('click',e=>{ if(e.target===overlay) overlay.classList.remove('open'); });
+
+/* ---------- init ---------- */
+loadSettings();
+mode=settings.mode;
+reflectModeBtns();
+renderSmells();
+buildHome();
+show('home');
+</script>
+</body>
+</html>
